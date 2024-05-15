@@ -2,6 +2,8 @@ package com.example.leetcode;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Stack;
 
 /**
@@ -20,48 +22,61 @@ public class LeetCode0394 {
         System.out.println(decodeString("abc3[cd]xyz"));
     }
 
-    public String decodeString(String s) {
-        StringBuilder str = new StringBuilder();
-        Stack<Character> stack = new Stack<>();
-        for (char c : s.toCharArray()) {
-            if (c > 47 && c < 59) {
-                stack.push(c);
-            } else if (c == '[') {
-                stack.push(c);
-            } else if (c == ']') {
-                stack.
-            }
-        }
-        StringBuilder tmp = new StringBuilder();
-        int num = 0;
-        while (!stack.isEmpty()) {
-            char c = stack.pop();
-            if (c == '[') {
-                int i = 0, nums = 0;
-                while (!stack.isEmpty() && stack.peek() > 47 && stack.peek() < 59) {
-                    i = i + (stack.pop() - 48) * (int) Math.pow(10, nums);
-                    nums++;
-                }
-                String str1 = tmp.toString();
-                while (i > 1) {
-                    tmp.insert(0, str1);
-                    i--;
-                }
+    int ptr;
 
-                num--;
-                if (num == 0) {
-                    str.insert(0, tmp);
-                    tmp = new StringBuilder();
+    public String decodeString(String s) {
+        LinkedList<String> stk = new LinkedList<String>();
+        ptr = 0;
+
+        while (ptr < s.length()) {
+            char cur = s.charAt(ptr);
+            if (Character.isDigit(cur)) {
+                // 获取一个数字并进栈
+                String digits = getDigits(s);
+                stk.addLast(digits);
+            } else if (Character.isLetter(cur) || cur == '[') {
+                // 获取一个字母并进栈
+                stk.addLast(String.valueOf(s.charAt(ptr++)));
+            } else {
+                ++ptr;
+                LinkedList<String> sub = new LinkedList<String>();
+                while (!"[".equals(stk.peekLast())) {
+                    sub.addLast(stk.removeLast());
                 }
-            } else if (c == ']') {
-                num++;
-                str.append(tmp);
-                tmp = new StringBuilder();
-            } else if (c > 96 && c < 123) {
-                tmp = tmp.insert(0, c);
+                Collections.reverse(sub);
+                // 左括号出栈
+                stk.removeLast();
+                // 此时栈顶为当前 sub 对应的字符串应该出现的次数
+                int repTime = Integer.parseInt(stk.removeLast());
+                StringBuffer t = new StringBuffer();
+                String o = getString(sub);
+                // 构造字符串
+                while (repTime-- > 0) {
+                    t.append(o);
+                }
+                // 将构造好的字符串入栈
+                stk.addLast(t.toString());
             }
         }
-        str.insert(0, tmp);
-        return str.toString();
+
+        return getString(stk);
     }
+
+    public String getDigits(String s) {
+        StringBuffer ret = new StringBuffer();
+        while (Character.isDigit(s.charAt(ptr))) {
+            ret.append(s.charAt(ptr++));
+        }
+        return ret.toString();
+    }
+
+    public String getString(LinkedList<String> v) {
+        StringBuffer ret = new StringBuffer();
+        for (String s : v) {
+            ret.append(s);
+        }
+        return ret.toString();
+    }
+
+
 }
